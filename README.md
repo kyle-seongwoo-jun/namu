@@ -1,4 +1,4 @@
-# EngScript
+# namu
 Run English Sentences!
 
 # Exemple
