@@ -37,8 +37,8 @@ console, log "Hello, world!".
 # Progress
 |Features|Progress|
 |--------|--------|
-|Language Specification|In progress|
-|Supporting basic C# syntax|In progress|
-|namu Interactive|Not started|
-|namu basic library|Not started|
-|namu compiler|Not stared|
+|Language Specification|:waning_crescent_moon: In progress|
+|Supporting basic C# syntax|:waning_crescent_moon: In progress|
+|namu Interactive|:new_moon: Not started|
+|namu basic library|:new_moon: Not started|
+|namu compiler|:new_moon: Not stared|
