@@ -42,3 +42,9 @@ console, log "Hello, world!".
 |namu Interactive|:new_moon: Not started|
 |namu basic library|:new_moon: Not started|
 |namu compiler|:new_moon: Not stared|
+
+## Currently supported syntax
+|Syntax|Example|
+|------|--------|
+|Declaration|`index is a number.`, `name is "kyle".`|
+|Calling function|`Play the song.`|
