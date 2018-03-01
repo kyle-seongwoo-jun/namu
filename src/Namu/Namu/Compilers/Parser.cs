@@ -74,10 +74,11 @@ namespace Namu.Compilers
             };
         }
 
-        public static string Parse(string code)
+        public static string Parse(string code, bool getErrorMessage = false)
         {
             foreach (var item in codeParserDictionary)
             {
+
                 if (item.Key.IsMatch(code))
                 {
                     var match = item.Key.Match(code);
@@ -85,7 +86,7 @@ namespace Namu.Compilers
                 }
             }
 
-            return errorMessage;
+            return getErrorMessage ? errorMessage : code;
         }
     }
 }
