@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
@@ -67,7 +71,59 @@ namespace Namu.Compilers
 
         string GetDescription(object obj)
         {
+            if (obj is char)
+            {
+                return $"'{obj}'";
+            }
+            else if (obj is string)
+            {
+                return $"\"{obj}\"";
+            }
+            else if (obj is IEnumerable enumerable)
+            {
+                var collection = enumerable.OfType<object>();
+
+                string type = CSharpName(obj.GetType());
+
+                int count = collection.Count();
+                var desc = collection.Select(x => GetDescription(x));
+                string description = string.Join(", ", desc);
+
+                return $"{type}({count}) {{ {description} }}";
+            }
+            else
+            {
+                var type = obj.GetType();
+                if (type.IsClass) 
+                {
+                    var methods = type.GetMembers();
+                    bool isOverridden = methods.Where(x => x.Name == "ToString").Any(x => x.DeclaringType != typeof(object));
+
+                    if (isOverridden)
+                    {
+                        return $"[{obj}]";
+                    }
+                    else 
+                    {
+                        var props = type.GetProperties().Select(x => $"{x.Name}={GetDescription(x.GetValue(obj, null))}");
+                        return  $"{obj} {{ {string.Join(", ", props)} }}";
+                    }
+                }
+            }
+
             return obj.ToString();
+        }
+
+        string CSharpName(Type type)
+        {
+            var sb = new StringBuilder();
+            var name = type.Name;
+            if (!type.IsGenericType) return name;
+            sb.Append(name.Substring(0, name.IndexOf('`')));
+            sb.Append("<");
+            sb.Append(string.Join(", ", type.GetGenericArguments().Select(t => CSharpName(t))));
+            sb.Append(">");
+            return sb.ToString();
         }
     }
 }
