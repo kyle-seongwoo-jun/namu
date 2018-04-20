@@ -39,7 +39,8 @@ namespace Namu.Compilers
             var returnValue = await ExecuteAsync(code);
             if (returnValue != null)
             {
-                Console.WriteLine(returnValue);
+                string description = GetDescription(returnValue);
+                Console.WriteLine(description);
             }
         }
 
@@ -62,6 +63,11 @@ namespace Namu.Compilers
                 return scriptState.ReturnValue;
 
             return null;
+        }
+
+        string GetDescription(object obj)
+        {
+            return obj.ToString();
         }
     }
 }
