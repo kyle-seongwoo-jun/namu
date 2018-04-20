@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 
 namespace Namu.Compilers
 {
@@ -10,44 +11,57 @@ namespace Namu.Compilers
 
         public static REPL Current => current.Value;
 
-        bool isWindows;
-        Process shell;
+        ScriptState<object> scriptState;
+        ConsoleColor defaultColor;
 
         protected REPL()
         {
-            isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            InitializeAsync().Wait();
+        }
 
-            shell = new Process
+        public async Task InitializeAsync()
+        {
+            const string defaultUsings = @"using System;
+            using System.IO;
+            using System.Collections.Generic;
+            using System.Diagnostics;
+            using System.Text;
+            using System.Threading.Tasks;
+            using static System.Console;";
+
+            scriptState = await CSharpScript.RunAsync(defaultUsings);
+
+            defaultColor = Console.ForegroundColor;
+        }
+
+        public async Task RunAsync(string code)
+        {
+            var returnValue = await ExecuteAsync(code);
+            if (returnValue != null)
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = isWindows ? "csi.exe" : "csharp",
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            };
-
-            shell.OutputDataReceived += Shell_DataReceived;
-            shell.ErrorDataReceived += Shell_DataReceived;
-
-            shell.Start();
-
-            shell.BeginOutputReadLine();
-            shell.BeginErrorReadLine();
+                Console.WriteLine(returnValue);
+            }
         }
 
-        public void Run(string code)
+        public async Task<object> ExecuteAsync(string code)
         {
+            try
+            {
+                scriptState = await scriptState.ContinueWithAsync(code);
+            }
+            catch (CompilationErrorException e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Message);
+                Console.ForegroundColor = defaultColor;
 
+                return null;
+            }
 
-            shell.StandardInput.WriteLine(code);
-        }
+            if (scriptState.ReturnValue != null && !string.IsNullOrEmpty(scriptState.ReturnValue.ToString()))
+                return scriptState.ReturnValue;
 
-        void Shell_DataReceived(object sender, DataReceivedEventArgs e)
-        {
-            Console.WriteLine(e.Data);
+            return null;
         }
     }
 }

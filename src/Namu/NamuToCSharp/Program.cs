@@ -13,6 +13,8 @@ namespace NamuToCSharp
         {
             Console.CancelKeyPress += Console_CancelKeyPress;
 
+            var repl = REPL.Current;
+
             var list = new List<string>();
 
             while (true)
@@ -29,7 +31,7 @@ namespace NamuToCSharp
                 var result = Parser.Parse(namu);
                 list.Add(result);
 				if (showCsharpCode) Console.WriteLine($"C#> {result}");
-                REPL.Current.Run(result);
+                repl.RunAsync(result).Wait();
             }
         }
 
