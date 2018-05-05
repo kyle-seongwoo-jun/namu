@@ -64,6 +64,14 @@ namespace Namu.Compilers
 
                 return null;
             }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Message);
+                Console.ForegroundColor = defaultColor;
+
+                return null;
+            }
 
             if (scriptState.ReturnValue != null && !string.IsNullOrEmpty(scriptState.ReturnValue.ToString()))
                 return scriptState.ReturnValue;
