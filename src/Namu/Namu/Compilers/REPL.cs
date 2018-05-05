@@ -31,9 +31,11 @@ namespace Namu.Compilers
             using System.Diagnostics;
             using System.Text;
             using System.Threading.Tasks;
-            using static System.Console;";
+            using static System.Console;
+            using static Namu.BasicLibrary;";
 
-            scriptState = await CSharpScript.RunAsync(defaultUsings);
+            scriptState = await CSharpScript.RunAsync(defaultUsings, 
+                ScriptOptions.Default.WithReferences(typeof(Namu.BasicLibrary).Assembly));
 
             defaultColor = Console.ForegroundColor;
         }
