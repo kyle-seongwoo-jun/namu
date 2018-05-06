@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NamuToCSharp", "NamuToCSharp\NamuToCSharp.csproj", "{181282C9-3627-42DD-B17C-E704895E1C4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NamuREPL", "NamuREPL\NamuREPL.csproj", "{181282C9-3627-42DD-B17C-E704895E1C4E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Namu", "Namu\Namu.csproj", "{A81F1B0E-3A34-480B-968D-268EEB8433FB}"
 EndProject

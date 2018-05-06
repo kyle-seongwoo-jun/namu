@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Namu.Compilers;
 
-namespace NamuToCSharp
+namespace NamuREPL
 {
     class Program
     {
