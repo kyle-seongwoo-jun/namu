@@ -13,7 +13,7 @@ namespace NamuREPL
         {
             Console.CancelKeyPress += Console_CancelKeyPress;
 
-            var repl = REPL.Current;
+            var repl = NamuRepl.Current;
             await repl.InitializeAsync();
 
             while (true)
@@ -25,10 +25,7 @@ namespace NamuREPL
                 if (isCancel) break;
                 else if (namuCode == string.Empty) continue;
 
-                string csharpCode = Parser.Parse(namuCode);
-                Console.WriteLine($"[C#] {csharpCode}");
-
-                var result = await repl.RunAsync(csharpCode);
+                var result = await repl.RunAsync(namuCode);
                 switch (result.Result)
                 {
                     case ResultType.SuccessWithReturnValue:

@@ -8,15 +8,15 @@ using Microsoft.CodeAnalysis.Scripting;
 
 namespace Namu.Compilers
 {
-    public class REPL
+    public class NamuRepl
     {
-        static Lazy<REPL> current = new Lazy<REPL>(() => new REPL());
+        static Lazy<NamuRepl> current = new Lazy<NamuRepl>(() => new NamuRepl());
 
-        public static REPL Current => current.Value;
+        public static NamuRepl Current => current.Value;
 
         ScriptState<object> scriptState;
 
-        protected REPL()
+        protected NamuRepl()
         {
         }
 
@@ -35,11 +35,15 @@ namespace Namu.Compilers
                 ScriptOptions.Default.WithReferences(typeof(Namu.BasicLibrary).Assembly));
         }
 
-        public async Task<ReplResult> RunAsync(string code)
+        public async Task<ReplResult> RunAsync(string namuCode)
         {
+            string csharpCode = ToCsharpCode(namuCode);
+#if DEBUG
+            Console.WriteLine($"[C#] {csharpCode}");
+#endif
             try
             {
-				object returnValue = await ExecuteAsync(code);
+                object returnValue = await ExecuteAsync(csharpCode);
                 return new ReplResult(returnValue);
             }
             catch (CompilationErrorException e)
@@ -52,17 +56,22 @@ namespace Namu.Compilers
             }
         }
 
-        public async Task<object> ExecuteAsync(string code)
+        async Task<object> ExecuteAsync(string csharpCode)
         {
             if (scriptState == null)
                 await InitializeAsync();
 
-			scriptState = await scriptState.ContinueWithAsync(code);
+			scriptState = await scriptState.ContinueWithAsync(csharpCode);
 
             if (scriptState.ReturnValue != null && !string.IsNullOrEmpty(scriptState.ReturnValue.ToString()))
                 return scriptState.ReturnValue;
 
             return null;
+        }
+
+        string ToCsharpCode(string namuCode)
+        {
+            return Parser.Parse(namuCode);
         }
     }
 
