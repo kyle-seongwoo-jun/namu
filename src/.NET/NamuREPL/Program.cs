@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Namu.Compilers;
 
 namespace NamuREPL
@@ -9,29 +9,37 @@ namespace NamuREPL
 		static bool isCancel;
         const bool showCsharpCode = true;
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.CancelKeyPress += Console_CancelKeyPress;
 
             var repl = REPL.Current;
-
-            var list = new List<string>();
+            await repl.InitializeAsync();
 
             while (true)
             {
-                Console.Write("namu> ");
+                Console.Write(">>> ");
 
-                var namu = Console.ReadLine();
+                string namuCode = Console.ReadLine();
 
-                if (namu == "history") { list.ForEach(x => Console.WriteLine(x)); Console.WriteLine(); continue; }
-                else if (namu == "clear") { list.Clear(); continue; }
-                else if (namu == "exit" || namu == null || isCancel) break;
-                else if (namu == string.Empty) continue;
+                if (namuCode == "exit" || namuCode == null || isCancel) break;
+                else if (namuCode == string.Empty) continue;
 
-                var result = Parser.Parse(namu);
-                list.Add(result);
-				if (showCsharpCode) Console.WriteLine($"C#> {result}");
-                repl.RunAsync(result).Wait();
+                string csharpCode = Parser.Parse(namuCode);
+                Console.WriteLine($"[C#] {csharpCode}");
+
+                var result = await repl.RunAsync(csharpCode);
+                switch (result.Result)
+                {
+                    case ResultType.SuccessWithReturnValue:
+                        Console.WriteLine(result.ReturnString);
+                        break;
+                    
+                    case ResultType.Fail:
+					case ResultType.CompilationError:
+                        ConsoleManager.PrintError(result.ReturnString);
+                        break;
+                }
             }
         }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
@@ -16,11 +15,9 @@ namespace Namu.Compilers
         public static REPL Current => current.Value;
 
         ScriptState<object> scriptState;
-        ConsoleColor defaultColor;
 
         protected REPL()
         {
-            InitializeAsync().Wait();
         }
 
         public async Task InitializeAsync()
@@ -36,47 +33,79 @@ namespace Namu.Compilers
 
             scriptState = await CSharpScript.RunAsync(defaultUsings, 
                 ScriptOptions.Default.WithReferences(typeof(Namu.BasicLibrary).Assembly));
-
-            defaultColor = Console.ForegroundColor;
         }
 
-        public async Task RunAsync(string code)
+        public async Task<ReplResult> RunAsync(string code)
         {
-            var returnValue = await ExecuteAsync(code);
-            if (returnValue != null)
+            try
             {
-                string description = GetDescription(returnValue);
-                Console.WriteLine(description);
+				object returnValue = await ExecuteAsync(code);
+                return new ReplResult(returnValue);
+            }
+            catch (CompilationErrorException e)
+            {
+                return new ReplResult(e);
+            }
+            catch (Exception e)
+            {
+                return new ReplResult(e);
             }
         }
 
         public async Task<object> ExecuteAsync(string code)
         {
-            try
-            {
-                scriptState = await scriptState.ContinueWithAsync(code);
-            }
-            catch (CompilationErrorException e)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(e.Message);
-                Console.ForegroundColor = defaultColor;
+            if (scriptState == null)
+                await InitializeAsync();
 
-                return null;
-            }
-            catch (Exception e)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(e.Message);
-                Console.ForegroundColor = defaultColor;
-
-                return null;
-            }
+			scriptState = await scriptState.ContinueWithAsync(code);
 
             if (scriptState.ReturnValue != null && !string.IsNullOrEmpty(scriptState.ReturnValue.ToString()))
                 return scriptState.ReturnValue;
 
             return null;
+        }
+    }
+
+    public enum ResultType
+    {
+        Success,
+        SuccessWithReturnValue,
+        CompilationError,
+        Fail
+    }
+
+    public class ReplResult
+    {
+        public ResultType Result { get; private set; }
+        public string ReturnString { get; private set; }
+        public Exception Exception { get; private set; }
+
+        public ReplResult(object obj = null)
+        {
+            if (obj != null) 
+            {
+                Result = ResultType.SuccessWithReturnValue;
+                ReturnString = GetDescription(obj);
+            }
+            else
+            {
+				Result = ResultType.Success;
+                ReturnString = string.Empty;
+            }
+        }
+
+        public ReplResult(CompilationErrorException exception)
+        {
+            Result = ResultType.CompilationError;
+            ReturnString = exception.Message;
+            Exception = exception;
+        }
+
+        public ReplResult(Exception exception)
+        {
+            Result = ResultType.Fail;
+            ReturnString = exception.Message;
+            Exception = exception;
         }
 
         string GetDescription(object obj)
@@ -104,7 +133,7 @@ namespace Namu.Compilers
             else
             {
                 var type = obj.GetType();
-                if (type.IsClass) 
+                if (type.IsClass)
                 {
                     var methods = type.GetMembers();
                     bool isOverridden = methods.Where(x => x.Name == "ToString").Any(x => x.DeclaringType != typeof(object));
@@ -113,10 +142,10 @@ namespace Namu.Compilers
                     {
                         return $"[{obj}]";
                     }
-                    else 
+                    else
                     {
                         var props = type.GetProperties().Select(x => $"{x.Name}={GetDescription(x.GetValue(obj, null))}");
-                        return  $"{obj} {{ {string.Join(", ", props)} }}";
+                        return $"{obj} {{ {string.Join(", ", props)} }}";
                     }
                 }
             }
