@@ -22,7 +22,7 @@ namespace NamuREPL
 
                 string namuCode = Console.ReadLine();
 
-                if (namuCode == "exit" || namuCode == null || isCancel) break;
+                if (isCancel) break;
                 else if (namuCode == string.Empty) continue;
 
                 string csharpCode = Parser.Parse(namuCode);

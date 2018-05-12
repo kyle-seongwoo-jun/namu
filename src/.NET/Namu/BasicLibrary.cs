@@ -10,5 +10,10 @@ namespace Namu
         {
             Console.WriteLine(value);
         }
+
+        public static void exit()
+        {
+            Environment.Exit(0);
+        }
     }
 }
